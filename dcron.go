@@ -12,14 +12,21 @@ import (
 type Cron struct {
 	key      string
 	hostname string
-	cron     cron.Cron
+	cron     *cron.Cron
 	mutex    Mutex
 	jobs     []*addedJob
 }
 
+func NewCron() *Cron {
+	return &Cron{
+		cron: cron.New(cron.WithSeconds()),
+	}
+}
+
 func (c *Cron) AddJob(job Job) error {
 	j := &addedJob{
-		Job: job,
+		Job:  job,
+		cron: c,
 	}
 	entryID, err := c.cron.AddJob(j.Spec(), j)
 	if err != nil {
@@ -30,6 +37,18 @@ func (c *Cron) AddJob(job Job) error {
 	return nil
 }
 
+func (c *Cron) Start() {
+	c.cron.Start()
+}
+
+func (c *Cron) Stop() context.Context {
+	return c.cron.Stop()
+}
+
+func (c *Cron) Run() {
+	c.cron.Run()
+}
+
 type addedJob struct {
 	Job
 	cron    *Cron
@@ -38,15 +57,15 @@ type addedJob struct {
 
 func (j *addedJob) Run() {
 	c := j.cron
-	entry := c.cron.Entry(j.entryID)
-	key := fmt.Sprintf("dcron:%s.%s@%d", c.key, j.Key(), entry.Next.Unix())
+	planAt := c.cron.Entry(j.entryID).Prev
+	key := fmt.Sprintf("dcron:%s.%s@%d", c.key, j.Key(), planAt.Unix())
 
-	ctx := JobContext{
+	ctx := Context{
 		Context: context.TODO(),
 		Key:     key,
 		CronKey: c.key,
 		JobKey:  j.Key(),
-		PlanAt:  entry.Next,
+		PlanAt:  planAt,
 	}
 
 	skip := j.Before(ctx)
@@ -55,7 +74,7 @@ func (j *addedJob) Run() {
 	}
 
 	if !ctx.Skipped {
-		if j.cron.mutex.SetIfNotExists(key, c.hostname) {
+		if j.cron.mutex == nil || j.cron.mutex.SetIfNotExists(ctx.Key, c.hostname) {
 			ctx.BeginAt = pt.Time(time.Now())
 			if err := j.Job.Run(); err != nil {
 				ctx.Return = err

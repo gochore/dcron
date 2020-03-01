@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-type JobContext struct {
+type Context struct {
 	context.Context
 	Key     string
 	CronKey string

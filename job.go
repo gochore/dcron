@@ -4,7 +4,7 @@ type Job interface {
 	Key() string
 	Spec() string
 
-	Before(ctx JobContext) (skip bool)
+	Before(ctx Context) (skip bool)
 	Run() error
-	After(ctx JobContext)
+	After(ctx Context)
 }
