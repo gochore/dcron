@@ -5,11 +5,11 @@ import (
 	"time"
 )
 
-type Context struct {
+type Task struct {
 	context.Context
 	Key     string
-	CronKey string
-	JobKey  string
+	Cron    Cron
+	Job     Job
 	PlanAt  time.Time
 	BeginAt *time.Time
 	EndAt   *time.Time
