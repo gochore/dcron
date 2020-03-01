@@ -8,4 +8,3 @@ type Job interface {
 	Run() error
 	After(ctx JobContext)
 }
-

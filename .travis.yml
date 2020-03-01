@@ -9,7 +9,7 @@ before_install:
 script:
   - go test -race -coverprofile=coverage.txt -covermode=atomic
   - go vet -v ./...
-  - gofmt -l . && test -z $(gofmt -l .)
+  - gofmt -l . && test -z "$(gofmt -l .)"
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)

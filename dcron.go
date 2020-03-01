@@ -3,9 +3,10 @@ package dcron
 import (
 	"context"
 	"fmt"
+	"time"
+
 	"github.com/gochore/pt"
 	"github.com/robfig/cron/v3"
-	"time"
 )
 
 type Cron struct {
@@ -28,7 +29,6 @@ func (c *Cron) AddJob(job Job) error {
 	c.jobs = append(c.jobs, j)
 	return nil
 }
-
 
 type addedJob struct {
 	Job
