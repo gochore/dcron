@@ -28,7 +28,9 @@ func (j *innerJob) Run() {
 		Job:    j.Job,
 		PlanAt: planAt,
 	}
-	task.Context, _ = context.WithDeadline(context.Background(), nextAt)
+
+	var cancel context.CancelFunc
+	task.Context, cancel = context.WithDeadline(context.Background(), nextAt)
 
 	skip := j.Before(task)
 	if skip {
@@ -46,6 +48,8 @@ func (j *innerJob) Run() {
 			task.Missed = true
 		}
 	}
+
+	cancel()
 
 	j.After(task)
 }
