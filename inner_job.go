@@ -12,6 +12,7 @@ import (
 type innerJob struct {
 	cron          *Cron
 	entryID       cron.EntryID
+	entryGetter   EntryGetter
 	key           string
 	spec          string
 	before        BeforeFunc
@@ -31,7 +32,7 @@ func (j *innerJob) Spec() string {
 
 func (j *innerJob) Run() {
 	c := j.cron
-	entry := c.cron.Entry(j.entryID)
+	entry := j.entryGetter.Entry(j.entryID)
 	planAt := entry.Prev
 	nextAt := entry.Next
 	key := fmt.Sprintf("dcron:%s.%s@%d", c.key, j.key, planAt.Unix())
@@ -67,12 +68,17 @@ func (j *innerJob) Run() {
 				if task.Return == nil {
 					break
 				}
-				deadline, _ := task.Deadline()
-				interval := j.retryInterval(task.TriedTimes)
-				if -time.Since(deadline) < interval {
+				if task.Err() != nil {
 					break
 				}
-				time.Sleep(interval)
+				if j.retryInterval != nil {
+					interval := j.retryInterval(task.TriedTimes)
+					deadline, _ := task.Deadline()
+					if -time.Since(deadline) < interval {
+						break
+					}
+					time.Sleep(interval)
+				}
 			}
 
 			task.EndAt = pt.Time(time.Now())
@@ -88,4 +94,9 @@ func (j *innerJob) Run() {
 
 func (j *innerJob) Cron() *Cron {
 	return j.cron
+}
+
+//go:generate mockgen -source=inner_job.go -destination mock_dcron/inner_job.go
+type EntryGetter interface {
+	Entry(id cron.EntryID) cron.Entry
 }

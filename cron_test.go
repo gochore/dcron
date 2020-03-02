@@ -22,7 +22,13 @@ func Test_Cron(t *testing.T) {
 		Times(2)
 
 	job := NewJob("test", "*/5 * * * * *", func(task Task) error {
-		t.Logf("run: %+v", task)
+		task.Value("")
+		select {
+		case <-task.Done():
+			t.Logf("exit: %+v", task)
+		case <-time.After(time.Second):
+			t.Logf("run: %+v", task)
+		}
 		return nil
 	}, WithBeforeFunc(func(task Task) (skip bool) {
 		t.Logf("before: %+v", task)

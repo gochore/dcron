@@ -33,10 +33,11 @@ func NewCron(options ...CronOption) *Cron {
 
 func (c *Cron) AddJob(job Job) error {
 	j := &innerJob{
-		cron: c,
-		key:  job.Key(),
-		spec: job.Spec(),
-		run:  job.Run,
+		cron:        c,
+		entryGetter: c.cron,
+		key:         job.Key(),
+		spec:        job.Spec(),
+		run:         job.Run,
 	}
 
 	for _, option := range job.Options() {
