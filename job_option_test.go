@@ -140,3 +140,27 @@ func TestWithRetryTimes(t *testing.T) {
 		})
 	}
 }
+
+func TestWithNoMutex(t *testing.T) {
+	tests := []struct {
+		name  string
+		check func(t *testing.T, option JobOption)
+	}{
+		{
+			name: "regular",
+			check: func(t *testing.T, option JobOption) {
+				j := &innerJob{}
+				option(j)
+				if !j.noMutex {
+					t.Fatal(j.noMutex)
+				}
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := WithNoMutex()
+			tt.check(t, got)
+		})
+	}
+}
