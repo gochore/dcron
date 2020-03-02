@@ -38,3 +38,9 @@ func WithRetryInterval(retryInterval RetryInterval) JobOption {
 		job.retryInterval = retryInterval
 	}
 }
+
+func WithNoMutex() JobOption {
+	return func(job *innerJob) {
+		job.noMutex = true
+	}
+}

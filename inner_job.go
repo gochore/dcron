@@ -22,6 +22,7 @@ type innerJob struct {
 	after         AfterFunc
 	retryTimes    int
 	retryInterval RetryInterval
+	noMutex       bool
 }
 
 func (j *innerJob) Key() string {
@@ -60,7 +61,7 @@ func (j *innerJob) Run() {
 	}
 
 	if !task.Skipped {
-		if j.cron.mutex == nil || j.cron.mutex.SetIfNotExists(task.Key, c.hostname) {
+		if j.noMutex || j.cron.mutex == nil || j.cron.mutex.SetIfNotExists(task.Key, c.hostname) {
 			beginAt := time.Now()
 			task.BeginAt = &beginAt
 
