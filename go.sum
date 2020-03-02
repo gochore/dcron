@@ -1,5 +1,3 @@
-github.com/gochore/pt v1.1.2 h1:3qS64f1ZrFgp28dperUHfo7U22gL/QeGWsaxQ0veIBE=
-github.com/gochore/pt v1.1.2/go.mod h1:8fd2g+qoAO1QIorsgi9vLJCMudJ5m+nDhY8r1nPP6dg=
 github.com/golang/mock v1.4.1 h1:ocYkMQY5RrXTYgXl7ICpV0IXwlEQGwKIsery4gyXa1U=
 github.com/golang/mock v1.4.1/go.mod h1:UOMv5ysSaYNkG+OFQykRIcU/QvvxJf3p21QfJ2Bt3cw=
 github.com/robfig/cron/v3 v3.0.1 h1:WdRxkvbJztn8LMz/QEvLN5sBU+xKpSqwwUO1Pjr4qDs=
