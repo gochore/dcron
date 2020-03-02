@@ -5,8 +5,11 @@ import (
 	"time"
 )
 
+const (
+	keyContextTask = "dcron/task"
+)
+
 type Task struct {
-	ctx        context.Context
 	Key        string
 	Cron       CronMeta
 	Job        JobMeta
@@ -19,18 +22,10 @@ type Task struct {
 	TriedTimes int
 }
 
-func (t Task) Deadline() (deadline time.Time, ok bool) {
-	return t.ctx.Deadline()
-}
-
-func (t Task) Done() <-chan struct{} {
-	return t.ctx.Done()
-}
-
-func (t Task) Err() error {
-	return t.ctx.Err()
-}
-
-func (t Task) Value(key interface{}) interface{} {
-	return t.ctx.Value(key)
+func TaskFromContext(ctx context.Context) (Task, bool) {
+	if ctx == nil {
+		return Task{}, false
+	}
+	task, ok := ctx.Value(keyContextTask).(Task)
+	return task, ok
 }

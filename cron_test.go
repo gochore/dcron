@@ -1,6 +1,7 @@
 package dcron
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -21,10 +22,10 @@ func Test_Cron(t *testing.T) {
 		Return(true).
 		Times(2)
 
-	job := NewJob("test", "*/5 * * * * *", func(task Task) error {
-		task.Value("")
+	job := NewJob("test", "*/5 * * * * *", func(ctx context.Context) error {
+		task, _ := TaskFromContext(ctx)
 		select {
-		case <-task.Done():
+		case <-ctx.Done():
 			t.Logf("exit: %+v", task)
 		case <-time.After(time.Second):
 			t.Logf("run: %+v", task)
@@ -36,7 +37,7 @@ func Test_Cron(t *testing.T) {
 	}), WithAfterFunc(func(task Task) {
 		t.Logf("after: %+v", task)
 	}))
-	if err := c.AddJob(job); err != nil {
+	if err := c.AddJobs(job); err != nil {
 		t.Fatal(err)
 	}
 	c.Start()
@@ -45,7 +46,7 @@ func Test_Cron(t *testing.T) {
 	<-c.Stop().Done()
 }
 
-func TestCron_AddJob(t *testing.T) {
+func TestCron_AddJobs(t *testing.T) {
 	c := cron.New(cron.WithSeconds())
 
 	type fields struct {
@@ -56,7 +57,7 @@ func TestCron_AddJob(t *testing.T) {
 		jobs     []*innerJob
 	}
 	type args struct {
-		job Job
+		jobs []Job
 	}
 	tests := []struct {
 		name    string
@@ -70,9 +71,53 @@ func TestCron_AddJob(t *testing.T) {
 				cron: c,
 			},
 			args: args{
-				job: NewJob("test_job", "* * * * * *", nil),
+				jobs: []Job{
+					NewJob("test_job", "* * * * * *", nil),
+				},
 			},
 			wantErr: false,
+		},
+		{
+			name: "multiple jobs",
+			fields: fields{
+				cron: c,
+			},
+			args: args{
+				jobs: []Job{
+					NewJob("test_job_1", "* * * * * *", nil),
+					NewJob("test_job_2", "* * * * * *", nil),
+					NewJob("test_job_3", "* * * * * *", nil),
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "multiple jobs contain error",
+			fields: fields{
+				cron: c,
+			},
+			args: args{
+				jobs: []Job{
+					NewJob("test_job_1", "* * * * * *", nil),
+					NewJob("test_job_2", "* * * * *", nil),
+					NewJob("test_job_3", "* * * * * *", nil),
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "multiple jobs contain same",
+			fields: fields{
+				cron: c,
+			},
+			args: args{
+				jobs: []Job{
+					NewJob("test_job_1", "* * * * * *", nil),
+					NewJob("test_job_2", "* * * * * *", nil),
+					NewJob("test_job_1", "* * * * * *", nil),
+				},
+			},
+			wantErr: true,
 		},
 		{
 			name: "with option",
@@ -80,7 +125,9 @@ func TestCron_AddJob(t *testing.T) {
 				cron: c,
 			},
 			args: args{
-				job: NewJob("test_job", "* * * * * *", nil, WithRetryTimes(3)),
+				jobs: []Job{
+					NewJob("test_job", "* * * * * *", nil, WithRetryTimes(3)),
+				},
 			},
 			wantErr: false,
 		},
@@ -90,7 +137,9 @@ func TestCron_AddJob(t *testing.T) {
 				cron: c,
 			},
 			args: args{
-				job: NewJob("test_job", "* * * * *", nil),
+				jobs: []Job{
+					NewJob("test_job", "* * * * *", nil),
+				},
 			},
 			wantErr: true,
 		},
@@ -104,7 +153,7 @@ func TestCron_AddJob(t *testing.T) {
 				mutex:    tt.fields.mutex,
 				jobs:     tt.fields.jobs,
 			}
-			if err := c.AddJob(tt.args.job); (err != nil) != tt.wantErr {
+			if err := c.AddJobs(tt.args.jobs...); (err != nil) != tt.wantErr {
 				t.Errorf("AddJob() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})

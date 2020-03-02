@@ -1,8 +1,10 @@
 package dcron
 
 import (
+	"context"
 	"errors"
 	"reflect"
+	"strings"
 	"testing"
 	"time"
 
@@ -155,7 +157,7 @@ func Test_innerJob_Run(t *testing.T) {
 				before: func(task Task) (skip bool) {
 					return false
 				},
-				run: func(task Task) error {
+				run: func(ctx context.Context) error {
 					return nil
 				},
 				after: func(task Task) {
@@ -175,7 +177,7 @@ func Test_innerJob_Run(t *testing.T) {
 				before: func(task Task) (skip bool) {
 					return true
 				},
-				run: func(task Task) error {
+				run: func(ctx context.Context) error {
 					return nil
 				},
 				after: func(task Task) {
@@ -195,7 +197,7 @@ func Test_innerJob_Run(t *testing.T) {
 				before: func(task Task) (skip bool) {
 					return false
 				},
-				run: func(task Task) error {
+				run: func(ctx context.Context) error {
 					return errors.New("show retry")
 				},
 				after: func(task Task) {
@@ -218,8 +220,8 @@ func Test_innerJob_Run(t *testing.T) {
 				before: func(task Task) (skip bool) {
 					return false
 				},
-				run: func(task Task) error {
-					return errors.New("show retry")
+				run: func(ctx context.Context) error {
+					return errors.New("should retry")
 				},
 				after: func(task Task) {
 					if task.Return == nil {
@@ -244,7 +246,7 @@ func Test_innerJob_Run(t *testing.T) {
 				before: func(task Task) (skip bool) {
 					return false
 				},
-				run: func(task Task) error {
+				run: func(ctx context.Context) error {
 					time.Sleep(2 * time.Second)
 					return errors.New("show retry")
 				},
@@ -269,12 +271,48 @@ func Test_innerJob_Run(t *testing.T) {
 				before: func(task Task) (skip bool) {
 					return false
 				},
-				run: func(task Task) error {
+				run: func(ctx context.Context) error {
 					return nil
 				},
 				after: func(task Task) {
 					if !task.Missed {
 						t.Fatal(task.Missed)
+					}
+				},
+				retryTimes: 1,
+			},
+		},
+		{
+			name: "panic by calling",
+			fields: fields{
+				cron:        NewCron(WithMutex(mutex)),
+				entryID:     1,
+				entryGetter: mockEntryGetter,
+				run: func(ctx context.Context) error {
+					panic("not happy")
+				},
+				after: func(task Task) {
+					if !strings.Contains(task.Return.Error(), "panic(not happy)") {
+						t.Fatal(task.Return)
+					}
+				},
+				retryTimes: 1,
+			},
+		},
+		{
+			name: "panic by runtime",
+			fields: fields{
+				cron:        NewCron(WithMutex(mutex)),
+				entryID:     1,
+				entryGetter: mockEntryGetter,
+				run: func(ctx context.Context) error {
+					ctx = nil
+					ctx.Value("test")
+					return nil
+				},
+				after: func(task Task) {
+					if !strings.Contains(task.Return.Error(), "panic(runtime error: invalid memory address or nil pointer dereference)") {
+						t.Fatal(task.Return)
 					}
 				},
 				retryTimes: 1,

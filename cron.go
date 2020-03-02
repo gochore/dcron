@@ -2,7 +2,10 @@ package dcron
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"os"
+	"strings"
 
 	"github.com/robfig/cron/v3"
 )
@@ -31,7 +34,26 @@ func NewCron(options ...CronOption) *Cron {
 	return ret
 }
 
-func (c *Cron) AddJob(job Job) error {
+func (c *Cron) AddJobs(jobs ...Job) error {
+	var errs []string
+	for _, job := range jobs {
+		if err := c.addJob(job); err != nil {
+			errs = append(errs, fmt.Sprintf("add job %s: %v", job.Key(), err))
+		}
+	}
+	if len(errs) != 0 {
+		return errors.New(strings.Join(errs, "; "))
+	}
+	return nil
+}
+
+func (c *Cron) addJob(job Job) error {
+	for _, j := range c.jobs {
+		if j.key == job.Key() {
+			return errors.New("added already")
+		}
+	}
+
 	j := &innerJob{
 		cron:        c,
 		entryGetter: c.cron,
