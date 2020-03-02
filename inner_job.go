@@ -12,7 +12,7 @@ import (
 type innerJob struct {
 	cron          *Cron
 	entryID       cron.EntryID
-	entryGetter   EntryGetter
+	entryGetter   entryGetter
 	key           string
 	spec          string
 	before        BeforeFunc
@@ -96,7 +96,3 @@ func (j *innerJob) Cron() *Cron {
 	return j.cron
 }
 
-//go:generate mockgen -source=inner_job.go -destination mock_dcron/inner_job.go
-type EntryGetter interface {
-	Entry(id cron.EntryID) cron.Entry
-}
