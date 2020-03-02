@@ -91,7 +91,7 @@ func TestCron_AddJobs(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "multiple jobs contains error",
+			name: "multiple jobs contain error",
 			fields: fields{
 				cron: c,
 			},
@@ -100,6 +100,20 @@ func TestCron_AddJobs(t *testing.T) {
 					NewJob("test_job_1", "* * * * * *", nil),
 					NewJob("test_job_2", "* * * * *", nil),
 					NewJob("test_job_3", "* * * * * *", nil),
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "multiple jobs contain same",
+			fields: fields{
+				cron: c,
+			},
+			args: args{
+				jobs: []Job{
+					NewJob("test_job_1", "* * * * * *", nil),
+					NewJob("test_job_2", "* * * * * *", nil),
+					NewJob("test_job_1", "* * * * * *", nil),
 				},
 			},
 			wantErr: true,

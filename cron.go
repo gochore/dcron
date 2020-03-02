@@ -48,6 +48,12 @@ func (c *Cron) AddJobs(jobs ...Job) error {
 }
 
 func (c *Cron) addJob(job Job) error {
+	for _, j := range c.jobs {
+		if j.key == job.Key() {
+			return errors.New("added already")
+		}
+	}
+
 	j := &innerJob{
 		cron:        c,
 		entryGetter: c.cron,
