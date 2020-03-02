@@ -7,6 +7,11 @@ import (
 	"github.com/robfig/cron/v3"
 )
 
+type CronMeta interface {
+	Key() string
+	Hostname() string
+}
+
 type Cron struct {
 	key      string
 	hostname string
@@ -28,9 +33,19 @@ func NewCron(options ...CronOption) *Cron {
 
 func (c *Cron) AddJob(job Job) error {
 	j := &innerJob{
-		Job:  job,
 		cron: c,
+		key:  job.Key(),
+		spec: job.Spec(),
+		run:  job.Run,
 	}
+
+	for _, option := range job.Options() {
+		option(j)
+	}
+	if j.retryTimes < 1 {
+		j.retryTimes = 1
+	}
+
 	entryID, err := c.cron.AddJob(j.Spec(), j)
 	if err != nil {
 		return err

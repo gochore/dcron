@@ -10,9 +10,23 @@ import (
 )
 
 type innerJob struct {
-	Job
-	cron    *Cron
-	entryID cron.EntryID
+	cron          *Cron
+	entryID       cron.EntryID
+	key           string
+	spec          string
+	before        BeforeFunc
+	run           RunFunc
+	after         AfterFunc
+	retryTimes    int
+	retryInterval RetryInterval
+}
+
+func (j *innerJob) Key() string {
+	return j.key
+}
+
+func (j *innerJob) Spec() string {
+	return j.spec
 }
 
 func (j *innerJob) Run() {
@@ -20,19 +34,25 @@ func (j *innerJob) Run() {
 	entry := c.cron.Entry(j.entryID)
 	planAt := entry.Prev
 	nextAt := entry.Next
-	key := fmt.Sprintf("dcron:%s.%s@%d", c.key, j.Key(), planAt.Unix())
+	key := fmt.Sprintf("dcron:%s.%s@%d", c.key, j.key, planAt.Unix())
 
 	task := Task{
-		Key:    key,
-		Cron:   *c,
-		Job:    j.Job,
-		PlanAt: planAt,
+		Key:        key,
+		Cron:       c,
+		Job:        j,
+		PlanAt:     planAt,
+		TriedTimes: 0,
 	}
 
 	var cancel context.CancelFunc
-	task.Context, cancel = context.WithDeadline(context.Background(), nextAt)
+	task.ctx, cancel = context.WithDeadline(context.Background(), nextAt)
+	defer cancel()
 
-	skip := j.Before(task)
+	skip := false
+	if j.before != nil && j.before(task) {
+		skip = true
+	}
+
 	if skip {
 		task.Skipped = true
 	}
@@ -40,18 +60,30 @@ func (j *innerJob) Run() {
 	if !task.Skipped {
 		if j.cron.mutex == nil || j.cron.mutex.SetIfNotExists(task.Key, c.hostname) {
 			task.BeginAt = pt.Time(time.Now())
-			if err := j.Job.Run(); err != nil {
-				task.Return = err
+
+			for i := 0; i < j.retryTimes; i++ {
+				task.Return = j.run(task)
+				task.TriedTimes++
+				if task.Return == nil {
+					break
+				}
+				deadline, _ := task.Deadline()
+				interval := j.retryInterval(task.TriedTimes)
+				if -time.Since(deadline) < interval {
+					break
+				}
+				time.Sleep(interval)
 			}
+
 			task.EndAt = pt.Time(time.Now())
 		} else {
 			task.Missed = true
 		}
 	}
 
-	cancel()
-
-	j.After(task)
+	if j.after != nil {
+		j.after(task)
+	}
 }
 
 func (j *innerJob) Cron() *Cron {

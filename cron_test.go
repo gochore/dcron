@@ -20,20 +20,18 @@ func Test_Cron(t *testing.T) {
 		MinTimes(1)
 
 	cron := NewCron(WithKey("test_cron"), WithMutex(mutex))
-	job, err := NewJob("test", "*/5 * * * * *", func() error {
+	job := NewJob("test", "*/5 * * * * *", func(task Task) error {
 		log.Println("run")
+		log.Printf("%+v\n", task)
 		return nil
 	}, WithBeforeFunc(func(task Task) (skip bool) {
 		log.Println("before")
-		log.Printf("%+v", task)
+		log.Printf("%+v\n", task)
 		return false
 	}), WithAfterFunc(func(task Task) {
 		log.Println("after")
-		log.Printf("%+v", task)
+		log.Printf("%+v\n", task)
 	}))
-	if err != nil {
-		t.Fatal(err)
-	}
 	if err := cron.AddJob(job); err != nil {
 		t.Fatal(err)
 	}
