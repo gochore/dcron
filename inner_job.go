@@ -44,8 +44,7 @@ func (j *innerJob) Run() {
 		TriedTimes: 0,
 	}
 
-	var cancel context.CancelFunc
-	task.ctx, cancel = context.WithDeadline(context.Background(), nextAt)
+	ctx, cancel := context.WithDeadline(context.WithValue(context.Background(), keyContextTask, task), nextAt)
 	defer cancel()
 
 	skip := false
@@ -63,17 +62,17 @@ func (j *innerJob) Run() {
 			task.BeginAt = &beginAt
 
 			for i := 0; i < j.retryTimes; i++ {
-				task.Return = j.run(task)
+				task.Return = j.run(ctx)
 				task.TriedTimes++
 				if task.Return == nil {
 					break
 				}
-				if task.Err() != nil {
+				if ctx.Err() != nil {
 					break
 				}
 				if j.retryInterval != nil {
 					interval := j.retryInterval(task.TriedTimes)
-					deadline, _ := task.Deadline()
+					deadline, _ := ctx.Deadline()
 					if -time.Since(deadline) < interval {
 						break
 					}

@@ -1,6 +1,7 @@
 package dcron
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -21,10 +22,10 @@ func Test_Cron(t *testing.T) {
 		Return(true).
 		Times(2)
 
-	job := NewJob("test", "*/5 * * * * *", func(task Task) error {
-		task.Value("")
+	job := NewJob("test", "*/5 * * * * *", func(ctx context.Context) error {
+		task, _ := TaskFromContext(ctx)
 		select {
-		case <-task.Done():
+		case <-ctx.Done():
 			t.Logf("exit: %+v", task)
 		case <-time.After(time.Second):
 			t.Logf("run: %+v", task)

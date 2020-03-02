@@ -1,6 +1,7 @@
 package dcron
 
 import (
+	"context"
 	"reflect"
 	"testing"
 )
@@ -122,7 +123,7 @@ func Test_wrappedJob_Run(t *testing.T) {
 		options []JobOption
 	}
 	type args struct {
-		task Task
+		ctx context.Context
 	}
 	tests := []struct {
 		name    string
@@ -133,12 +134,12 @@ func Test_wrappedJob_Run(t *testing.T) {
 		{
 			name: "regular",
 			fields: fields{
-				run: func(task Task) error {
+				run: func(ctx context.Context) error {
 					return nil
 				},
 			},
 			args: args{
-				task: Task{},
+				ctx: context.Background(),
 			},
 			wantErr: false,
 		},
@@ -148,7 +149,7 @@ func Test_wrappedJob_Run(t *testing.T) {
 				run: nil,
 			},
 			args: args{
-				task: Task{},
+				ctx: context.Background(),
 			},
 			wantErr: false,
 		},
@@ -161,7 +162,7 @@ func Test_wrappedJob_Run(t *testing.T) {
 				run:     tt.fields.run,
 				options: tt.fields.options,
 			}
-			if err := j.Run(tt.args.task); (err != nil) != tt.wantErr {
+			if err := j.Run(tt.args.ctx); (err != nil) != tt.wantErr {
 				t.Errorf("Run() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})

@@ -1,5 +1,7 @@
 package dcron
 
+import "context"
+
 type JobMeta interface {
 	Key() string
 	Spec() string
@@ -7,7 +9,7 @@ type JobMeta interface {
 
 type Job interface {
 	JobMeta
-	Run(task Task) error
+	Run(ctx context.Context) error
 	Options() []JobOption
 }
 
@@ -35,9 +37,9 @@ func (j *wrappedJob) Spec() string {
 	return j.spec
 }
 
-func (j *wrappedJob) Run(task Task) error {
+func (j *wrappedJob) Run(ctx context.Context) error {
 	if j.run != nil {
-		return j.run(task)
+		return j.run(ctx)
 	}
 	return nil
 }

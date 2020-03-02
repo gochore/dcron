@@ -1,12 +1,15 @@
 package dcron
 
-import "time"
+import (
+	"context"
+	"time"
+)
 
 type JobOption func(job *innerJob)
 
 type BeforeFunc func(task Task) (skip bool)
 
-type RunFunc func(task Task) error
+type RunFunc func(ctx context.Context) error
 
 type AfterFunc func(task Task)
 

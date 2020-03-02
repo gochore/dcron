@@ -1,6 +1,7 @@
 package dcron
 
 import (
+	"context"
 	"errors"
 	"reflect"
 	"testing"
@@ -155,7 +156,7 @@ func Test_innerJob_Run(t *testing.T) {
 				before: func(task Task) (skip bool) {
 					return false
 				},
-				run: func(task Task) error {
+				run: func(ctx context.Context) error {
 					return nil
 				},
 				after: func(task Task) {
@@ -175,7 +176,7 @@ func Test_innerJob_Run(t *testing.T) {
 				before: func(task Task) (skip bool) {
 					return true
 				},
-				run: func(task Task) error {
+				run: func(ctx context.Context) error {
 					return nil
 				},
 				after: func(task Task) {
@@ -195,7 +196,7 @@ func Test_innerJob_Run(t *testing.T) {
 				before: func(task Task) (skip bool) {
 					return false
 				},
-				run: func(task Task) error {
+				run: func(ctx context.Context) error {
 					return errors.New("show retry")
 				},
 				after: func(task Task) {
@@ -218,8 +219,8 @@ func Test_innerJob_Run(t *testing.T) {
 				before: func(task Task) (skip bool) {
 					return false
 				},
-				run: func(task Task) error {
-					return errors.New("show retry")
+				run: func(ctx context.Context) error {
+					return errors.New("should retry")
 				},
 				after: func(task Task) {
 					if task.Return == nil {
@@ -244,7 +245,7 @@ func Test_innerJob_Run(t *testing.T) {
 				before: func(task Task) (skip bool) {
 					return false
 				},
-				run: func(task Task) error {
+				run: func(ctx context.Context) error {
 					time.Sleep(2 * time.Second)
 					return errors.New("show retry")
 				},
@@ -269,7 +270,7 @@ func Test_innerJob_Run(t *testing.T) {
 				before: func(task Task) (skip bool) {
 					return false
 				},
-				run: func(task Task) error {
+				run: func(ctx context.Context) error {
 					return nil
 				},
 				after: func(task Task) {
