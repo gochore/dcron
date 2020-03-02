@@ -3,6 +3,9 @@ package dcron
 import (
 	"context"
 	"fmt"
+	"runtime"
+	"runtime/debug"
+	"strings"
 	"time"
 
 	"github.com/robfig/cron/v3"
@@ -62,7 +65,7 @@ func (j *innerJob) Run() {
 			task.BeginAt = &beginAt
 
 			for i := 0; i < j.retryTimes; i++ {
-				task.Return = j.run(ctx)
+				task.Return = safeRun(ctx, j.run)
 				task.TriedTimes++
 				if task.Return == nil {
 					break
@@ -94,4 +97,25 @@ func (j *innerJob) Run() {
 
 func (j *innerJob) Cron() *Cron {
 	return j.cron
+}
+
+func safeRun(ctx context.Context, run RunFunc) (err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			pc := make([]uintptr, 16)
+			n := runtime.Callers(0, pc)
+			for _, p := range pc[:n] {
+				fn := runtime.FuncForPC(p)
+				if fn != nil {
+					file, line := fn.FileLine(p)
+					if !strings.Contains(fn.Name(), "runtime") {
+						err = fmt.Errorf("panic(%v) at %s:%d", r, file, line)
+						return
+					}
+				}
+			}
+			err = fmt.Errorf("panic(%v): %s", r, debug.Stack())
+		}
+	}()
+	return run(ctx)
 }

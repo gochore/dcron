@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"reflect"
+	"strings"
 	"testing"
 	"time"
 
@@ -276,6 +277,42 @@ func Test_innerJob_Run(t *testing.T) {
 				after: func(task Task) {
 					if !task.Missed {
 						t.Fatal(task.Missed)
+					}
+				},
+				retryTimes: 1,
+			},
+		},
+		{
+			name: "panic by calling",
+			fields: fields{
+				cron:        NewCron(WithMutex(mutex)),
+				entryID:     1,
+				entryGetter: mockEntryGetter,
+				run: func(ctx context.Context) error {
+					panic("not happy")
+				},
+				after: func(task Task) {
+					if !strings.Contains(task.Return.Error(), "panic(not happy)") {
+						t.Fatal(task.Return)
+					}
+				},
+				retryTimes: 1,
+			},
+		},
+		{
+			name: "panic by runtime",
+			fields: fields{
+				cron:        NewCron(WithMutex(mutex)),
+				entryID:     1,
+				entryGetter: mockEntryGetter,
+				run: func(ctx context.Context) error {
+					ctx = nil
+					ctx.Value("test")
+					return nil
+				},
+				after: func(task Task) {
+					if !strings.Contains(task.Return.Error(), "panic(runtime error: invalid memory address or nil pointer dereference)") {
+						t.Fatal(task.Return)
 					}
 				},
 				retryTimes: 1,
