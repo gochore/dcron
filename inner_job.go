@@ -10,29 +10,50 @@ import (
 )
 
 type innerJob struct {
-	Job
-	cron    *Cron
-	entryID cron.EntryID
+	cron          *Cron
+	entryID       cron.EntryID
+	entryGetter   EntryGetter
+	key           string
+	spec          string
+	before        BeforeFunc
+	run           RunFunc
+	after         AfterFunc
+	retryTimes    int
+	retryInterval RetryInterval
+}
+
+func (j *innerJob) Key() string {
+	return j.key
+}
+
+func (j *innerJob) Spec() string {
+	return j.spec
 }
 
 func (j *innerJob) Run() {
 	c := j.cron
-	entry := c.cron.Entry(j.entryID)
+	entry := j.entryGetter.Entry(j.entryID)
 	planAt := entry.Prev
 	nextAt := entry.Next
-	key := fmt.Sprintf("dcron:%s.%s@%d", c.key, j.Key(), planAt.Unix())
+	key := fmt.Sprintf("dcron:%s.%s@%d", c.key, j.key, planAt.Unix())
 
 	task := Task{
-		Key:    key,
-		Cron:   *c,
-		Job:    j.Job,
-		PlanAt: planAt,
+		Key:        key,
+		Cron:       c,
+		Job:        j,
+		PlanAt:     planAt,
+		TriedTimes: 0,
 	}
 
 	var cancel context.CancelFunc
-	task.Context, cancel = context.WithDeadline(context.Background(), nextAt)
+	task.ctx, cancel = context.WithDeadline(context.Background(), nextAt)
+	defer cancel()
 
-	skip := j.Before(task)
+	skip := false
+	if j.before != nil && j.before(task) {
+		skip = true
+	}
+
 	if skip {
 		task.Skipped = true
 	}
@@ -40,20 +61,42 @@ func (j *innerJob) Run() {
 	if !task.Skipped {
 		if j.cron.mutex == nil || j.cron.mutex.SetIfNotExists(task.Key, c.hostname) {
 			task.BeginAt = pt.Time(time.Now())
-			if err := j.Job.Run(); err != nil {
-				task.Return = err
+
+			for i := 0; i < j.retryTimes; i++ {
+				task.Return = j.run(task)
+				task.TriedTimes++
+				if task.Return == nil {
+					break
+				}
+				if task.Err() != nil {
+					break
+				}
+				if j.retryInterval != nil {
+					interval := j.retryInterval(task.TriedTimes)
+					deadline, _ := task.Deadline()
+					if -time.Since(deadline) < interval {
+						break
+					}
+					time.Sleep(interval)
+				}
 			}
+
 			task.EndAt = pt.Time(time.Now())
 		} else {
 			task.Missed = true
 		}
 	}
 
-	cancel()
-
-	j.After(task)
+	if j.after != nil {
+		j.after(task)
+	}
 }
 
 func (j *innerJob) Cron() *Cron {
 	return j.cron
+}
+
+//go:generate mockgen -source=inner_job.go -destination mock_dcron/inner_job.go
+type EntryGetter interface {
+	Entry(id cron.EntryID) cron.Entry
 }
