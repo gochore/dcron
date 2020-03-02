@@ -5,14 +5,13 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/gochore/pt"
 	"github.com/robfig/cron/v3"
 )
 
 type innerJob struct {
 	cron          *Cron
 	entryID       cron.EntryID
-	entryGetter   EntryGetter
+	entryGetter   entryGetter
 	key           string
 	spec          string
 	before        BeforeFunc
@@ -60,7 +59,8 @@ func (j *innerJob) Run() {
 
 	if !task.Skipped {
 		if j.cron.mutex == nil || j.cron.mutex.SetIfNotExists(task.Key, c.hostname) {
-			task.BeginAt = pt.Time(time.Now())
+			beginAt := time.Now()
+			task.BeginAt = &beginAt
 
 			for i := 0; i < j.retryTimes; i++ {
 				task.Return = j.run(task)
@@ -81,7 +81,8 @@ func (j *innerJob) Run() {
 				}
 			}
 
-			task.EndAt = pt.Time(time.Now())
+			endAt := time.Now()
+			task.EndAt = &endAt
 		} else {
 			task.Missed = true
 		}
@@ -94,9 +95,4 @@ func (j *innerJob) Run() {
 
 func (j *innerJob) Cron() *Cron {
 	return j.cron
-}
-
-//go:generate mockgen -source=inner_job.go -destination mock_dcron/inner_job.go
-type EntryGetter interface {
-	Entry(id cron.EntryID) cron.Entry
 }

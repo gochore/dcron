@@ -108,10 +108,10 @@ func Test_innerJob_Run(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	entryGetter := mock_dcron.NewMockEntryGetter(ctrl)
+	mockEntryGetter := mock_dcron.NewMockentryGetter(ctrl)
 	mutex := mock_dcron.NewMockMutex(ctrl)
 
-	entryGetter.EXPECT().
+	mockEntryGetter.EXPECT().
 		Entry(gomock.Any()).
 		DoAndReturn(func(id cron.EntryID) cron.Entry {
 			now := time.Now()
@@ -133,7 +133,7 @@ func Test_innerJob_Run(t *testing.T) {
 	type fields struct {
 		cron          *Cron
 		entryID       cron.EntryID
-		entryGetter   EntryGetter
+		entryGetter   entryGetter
 		key           string
 		spec          string
 		before        BeforeFunc
@@ -151,7 +151,7 @@ func Test_innerJob_Run(t *testing.T) {
 			fields: fields{
 				cron:        NewCron(WithMutex(mutex)),
 				entryID:     1,
-				entryGetter: entryGetter,
+				entryGetter: mockEntryGetter,
 				before: func(task Task) (skip bool) {
 					return false
 				},
@@ -171,7 +171,7 @@ func Test_innerJob_Run(t *testing.T) {
 			fields: fields{
 				cron:        NewCron(WithMutex(mutex)),
 				entryID:     1,
-				entryGetter: entryGetter,
+				entryGetter: mockEntryGetter,
 				before: func(task Task) (skip bool) {
 					return true
 				},
@@ -191,7 +191,7 @@ func Test_innerJob_Run(t *testing.T) {
 			fields: fields{
 				cron:        NewCron(WithMutex(mutex)),
 				entryID:     5,
-				entryGetter: entryGetter,
+				entryGetter: mockEntryGetter,
 				before: func(task Task) (skip bool) {
 					return false
 				},
@@ -214,7 +214,7 @@ func Test_innerJob_Run(t *testing.T) {
 			fields: fields{
 				cron:        NewCron(WithMutex(mutex)),
 				entryID:     5,
-				entryGetter: entryGetter,
+				entryGetter: mockEntryGetter,
 				before: func(task Task) (skip bool) {
 					return false
 				},
@@ -240,7 +240,7 @@ func Test_innerJob_Run(t *testing.T) {
 			fields: fields{
 				cron:        NewCron(WithMutex(mutex)),
 				entryID:     1,
-				entryGetter: entryGetter,
+				entryGetter: mockEntryGetter,
 				before: func(task Task) (skip bool) {
 					return false
 				},
@@ -265,7 +265,7 @@ func Test_innerJob_Run(t *testing.T) {
 			fields: fields{
 				cron:        NewCron(WithMutex(mutex), WithHostname("always_miss")),
 				entryID:     1,
-				entryGetter: entryGetter,
+				entryGetter: mockEntryGetter,
 				before: func(task Task) (skip bool) {
 					return false
 				},
