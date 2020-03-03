@@ -39,12 +39,7 @@ func NewJob(key, spec string, run RunFunc, options ...JobOption) Job {
 // Be careful, the 'run' should be a non-anonymous function,
 // or returned Job will has a emtpy key, and can not be added to a Cron.
 func NewJobWithNonAnonymousFunc(spec string, run RunFunc, options ...JobOption) Job {
-	return &wrappedJob{
-		key:     funcName(run),
-		spec:    spec,
-		run:     run,
-		options: options,
-	}
+	return NewJob(funcName(run), spec, run, options...)
 }
 
 func (j *wrappedJob) Key() string {
