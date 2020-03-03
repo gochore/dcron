@@ -48,6 +48,10 @@ func (c *Cron) AddJobs(jobs ...Job) error {
 }
 
 func (c *Cron) addJob(job Job) error {
+	if job.Key() == "" {
+		return errors.New("empty key")
+	}
+
 	for _, j := range c.jobs {
 		if j.key == job.Key() {
 			return errors.New("added already")

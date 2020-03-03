@@ -143,6 +143,18 @@ func TestCron_AddJobs(t *testing.T) {
 			},
 			wantErr: true,
 		},
+		{
+			name: "empty key",
+			fields: fields{
+				cron: c,
+			},
+			args: args{
+				jobs: []Job{
+					NewJob("", "* * * * * *", nil),
+				},
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
