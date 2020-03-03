@@ -13,11 +13,11 @@ import (
 func Test_Cron(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	mutex := mock_dcron.NewMockMutex(ctrl)
+	atomic := mock_dcron.NewMockAtomic(ctrl)
 
-	c := NewCron(WithKey("test_cron"), WithMutex(mutex))
+	c := NewCron(WithKey("test_cron"), WithAtomic(atomic))
 
-	mutex.EXPECT().
+	atomic.EXPECT().
 		SetIfNotExists(gomock.Any(), c.Hostname()).
 		Return(true).
 		Times(2)
@@ -53,7 +53,7 @@ func TestCron_AddJobs(t *testing.T) {
 		key      string
 		hostname string
 		cron     *cron.Cron
-		mutex    Mutex
+		atomic   Atomic
 		jobs     []*innerJob
 	}
 	type args struct {
@@ -150,7 +150,7 @@ func TestCron_AddJobs(t *testing.T) {
 				key:      tt.fields.key,
 				hostname: tt.fields.hostname,
 				cron:     tt.fields.cron,
-				mutex:    tt.fields.mutex,
+				atomic:   tt.fields.atomic,
 				jobs:     tt.fields.jobs,
 			}
 			if err := c.AddJobs(tt.args.jobs...); (err != nil) != tt.wantErr {
@@ -165,7 +165,7 @@ func TestCron_Hostname(t *testing.T) {
 		key      string
 		hostname string
 		cron     *cron.Cron
-		mutex    Mutex
+		atomic   Atomic
 		jobs     []*innerJob
 	}
 	tests := []struct {
@@ -187,7 +187,7 @@ func TestCron_Hostname(t *testing.T) {
 				key:      tt.fields.key,
 				hostname: tt.fields.hostname,
 				cron:     tt.fields.cron,
-				mutex:    tt.fields.mutex,
+				atomic:   tt.fields.atomic,
 				jobs:     tt.fields.jobs,
 			}
 			if got := c.Hostname(); got != tt.want {
@@ -202,7 +202,7 @@ func TestCron_Key(t *testing.T) {
 		key      string
 		hostname string
 		cron     *cron.Cron
-		mutex    Mutex
+		atomic   Atomic
 		jobs     []*innerJob
 	}
 	tests := []struct {
@@ -224,7 +224,7 @@ func TestCron_Key(t *testing.T) {
 				key:      tt.fields.key,
 				hostname: tt.fields.hostname,
 				cron:     tt.fields.cron,
-				mutex:    tt.fields.mutex,
+				atomic:   tt.fields.atomic,
 				jobs:     tt.fields.jobs,
 			}
 			if got := c.Key(); got != tt.want {
@@ -272,99 +272,6 @@ func TestNewCron(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := NewCron(tt.args.options...)
-			tt.check(t, got)
-		})
-	}
-}
-
-func TestWithHostname(t *testing.T) {
-	type args struct {
-		hostname string
-	}
-	tests := []struct {
-		name  string
-		args  args
-		check func(t *testing.T, option CronOption)
-	}{
-		{
-			name: "regular",
-			args: args{
-				hostname: "test_hostname",
-			},
-			check: func(t *testing.T, option CronOption) {
-				c := NewCron()
-				option(c)
-				if c.hostname != "test_hostname" {
-					t.Fatal(c.hostname)
-				}
-			},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := WithHostname(tt.args.hostname)
-			tt.check(t, got)
-		})
-	}
-}
-
-func TestWithKey(t *testing.T) {
-	type args struct {
-		key string
-	}
-	tests := []struct {
-		name  string
-		args  args
-		check func(t *testing.T, option CronOption)
-	}{
-		{
-			name: "regular",
-			args: args{
-				key: "test_cron",
-			},
-			check: func(t *testing.T, option CronOption) {
-				c := NewCron()
-				option(c)
-				if c.key != "test_cron" {
-					t.Fatal(c.key)
-				}
-			},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := WithKey(tt.args.key)
-			tt.check(t, got)
-		})
-	}
-}
-
-func TestWithMutex(t *testing.T) {
-	type args struct {
-		mutex Mutex
-	}
-	tests := []struct {
-		name  string
-		args  args
-		check func(t *testing.T, option CronOption)
-	}{
-		{
-			name: "regular",
-			args: args{
-				mutex: mock_dcron.NewMockMutex(nil),
-			},
-			check: func(t *testing.T, option CronOption) {
-				c := NewCron()
-				option(c)
-				if c.mutex == nil {
-					t.Fatal(c.mutex)
-				}
-			},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := WithMutex(tt.args.mutex)
 			tt.check(t, got)
 		})
 	}
