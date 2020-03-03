@@ -19,7 +19,7 @@ type Cron struct {
 	key      string
 	hostname string
 	cron     *cron.Cron
-	mutex    Mutex
+	atomic   Atomic
 	jobs     []*innerJob
 }
 
@@ -96,24 +96,4 @@ func (c *Cron) Key() string {
 
 func (c *Cron) Hostname() string {
 	return c.hostname
-}
-
-type CronOption func(c *Cron)
-
-func WithKey(key string) CronOption {
-	return func(c *Cron) {
-		c.key = key
-	}
-}
-
-func WithHostname(hostname string) CronOption {
-	return func(c *Cron) {
-		c.hostname = hostname
-	}
-}
-
-func WithMutex(mutex Mutex) CronOption {
-	return func(c *Cron) {
-		c.mutex = mutex
-	}
 }

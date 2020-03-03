@@ -61,7 +61,7 @@ func (j *innerJob) Run() {
 	}
 
 	if !task.Skipped {
-		if j.noMutex || j.cron.mutex == nil || j.cron.mutex.SetIfNotExists(task.Key, c.hostname) {
+		if j.noMutex || j.cron.atomic == nil || j.cron.atomic.SetIfNotExists(task.Key, c.hostname) {
 			beginAt := time.Now()
 			task.BeginAt = &beginAt
 
