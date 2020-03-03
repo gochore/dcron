@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/robfig/cron/v3"
 )
@@ -13,6 +14,8 @@ import (
 type CronMeta interface {
 	Key() string
 	Hostname() string
+	Statistics() Statistics
+	Jobs() []JobMeta
 }
 
 type Cron struct {
@@ -21,16 +24,23 @@ type Cron struct {
 	cron     *cron.Cron
 	atomic   Atomic
 	jobs     []*innerJob
+	location *time.Location
 }
 
 func NewCron(options ...CronOption) *Cron {
 	ret := &Cron{
-		cron: cron.New(cron.WithSeconds(), cron.WithLogger(cron.DiscardLogger)),
+		location: time.Local,
 	}
 	ret.hostname, _ = os.Hostname()
 	for _, option := range options {
 		option(ret)
 	}
+
+	ret.cron = cron.New(
+		cron.WithSeconds(),
+		cron.WithLogger(cron.DiscardLogger),
+		cron.WithLocation(ret.location),
+	)
 	return ret
 }
 
@@ -100,4 +110,20 @@ func (c *Cron) Key() string {
 
 func (c *Cron) Hostname() string {
 	return c.hostname
+}
+
+func (c *Cron) Statistics() Statistics {
+	ret := Statistics{}
+	for _, j := range c.jobs {
+		ret.add(j.statistics)
+	}
+	return ret
+}
+
+func (c *Cron) Jobs() []JobMeta {
+	var ret []JobMeta
+	for _, j := range c.jobs {
+		ret = append(ret, j)
+	}
+	return ret
 }

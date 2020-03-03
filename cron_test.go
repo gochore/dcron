@@ -44,6 +44,11 @@ func Test_Cron(t *testing.T) {
 	c.Run() // should be not working
 	time.Sleep(10 * time.Second)
 	<-c.Stop().Done()
+
+	t.Logf("cron statistics: %+v", c.Statistics())
+	for _, j := range c.Jobs() {
+		t.Logf("job %v statistics: %+v", j.Key(), j.Statistics())
+	}
 }
 
 func TestCron_AddJobs(t *testing.T) {

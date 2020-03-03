@@ -2,6 +2,7 @@ package dcron
 
 import (
 	"testing"
+	"time"
 
 	"github.com/gochore/dcron/mock_dcron"
 )
@@ -94,6 +95,38 @@ func TestWithAtomic(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := WithAtomic(tt.args.atomic)
+			tt.check(t, got)
+		})
+	}
+}
+
+func TestWithLocation(t *testing.T) {
+	type args struct {
+		loc *time.Location
+	}
+	tests := []struct {
+		name  string
+		args  args
+		want  CronOption
+		check func(t *testing.T, option CronOption)
+	}{
+		{
+			name: "regular",
+			args: args{
+				loc: time.UTC,
+			},
+			check: func(t *testing.T, option CronOption) {
+				c := NewCron()
+				option(c)
+				if c.location != time.UTC {
+					t.Fatal(c.location)
+				}
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := WithLocation(tt.args.loc)
 			tt.check(t, got)
 		})
 	}
