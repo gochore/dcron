@@ -292,7 +292,7 @@ func Test_innerJob_Run(t *testing.T) {
 					panic("not happy")
 				},
 				after: func(task Task) {
-					if !strings.Contains(task.Return.Error(), "panic(not happy)") {
+					if !strings.Contains(task.Return.Error(), "not happy") {
 						t.Fatal(task.Return)
 					}
 				},
@@ -311,7 +311,7 @@ func Test_innerJob_Run(t *testing.T) {
 					return nil
 				},
 				after: func(task Task) {
-					if !strings.Contains(task.Return.Error(), "panic(runtime error: invalid memory address or nil pointer dereference)") {
+					if !strings.Contains(task.Return.Error(), "runtime error: invalid memory address or nil pointer dereference") {
 						t.Fatal(task.Return)
 					}
 				},
