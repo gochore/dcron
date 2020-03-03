@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/robfig/cron/v3"
 )
@@ -21,16 +22,23 @@ type Cron struct {
 	cron     *cron.Cron
 	atomic   Atomic
 	jobs     []*innerJob
+	location *time.Location
 }
 
 func NewCron(options ...CronOption) *Cron {
 	ret := &Cron{
-		cron: cron.New(cron.WithSeconds(), cron.WithLogger(cron.DiscardLogger)),
+		location: time.Local,
 	}
 	ret.hostname, _ = os.Hostname()
 	for _, option := range options {
 		option(ret)
 	}
+
+	ret.cron = cron.New(
+		cron.WithSeconds(),
+		cron.WithLogger(cron.DiscardLogger),
+		cron.WithLocation(ret.location),
+	)
 	return ret
 }
 
