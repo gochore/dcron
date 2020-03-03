@@ -204,7 +204,7 @@ func Test_wrappedJob_Spec(t *testing.T) {
 	}
 }
 
-func TestNewJobWithNonAnonymousFunc(t *testing.T) {
+func TestNewJobWithAutoKey(t *testing.T) {
 	type args struct {
 		spec    string
 		run     RunFunc
@@ -264,7 +264,7 @@ func TestNewJobWithNonAnonymousFunc(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := NewJobWithNonAnonymousFunc(tt.args.spec, tt.args.run, tt.args.options...)
+			got := NewJobWithAutoKey(tt.args.spec, tt.args.run, tt.args.options...)
 			tt.check(t, got)
 		})
 	}
