@@ -203,3 +203,80 @@ func Test_wrappedJob_Spec(t *testing.T) {
 		})
 	}
 }
+
+func TestNewJobWithNonAnonymousFunc(t *testing.T) {
+	type args struct {
+		spec    string
+		run     RunFunc
+		options []JobOption
+	}
+	tests := []struct {
+		name  string
+		args  args
+		check func(t *testing.T, job Job)
+	}{
+		{
+			name: "regular",
+			args: args{
+				run: Func,
+			},
+			check: func(t *testing.T, job Job) {
+				if job.Key() != "Func" {
+					t.Fatal(job.Key())
+				}
+			},
+		},
+		{
+			name: "method",
+			args: args{
+				run: Foo{}.Method,
+			},
+			check: func(t *testing.T, job Job) {
+				if job.Key() != "Method" {
+					t.Fatal(job.Key())
+				}
+			},
+		},
+		{
+			name: "nil",
+			args: args{
+				run: nil,
+			},
+			check: func(t *testing.T, job Job) {
+				if job.Key() != "" {
+					t.Fatal(job.Key())
+				}
+			},
+		},
+		{
+			name: "anonymous func",
+			args: args{
+				run: func(ctx context.Context) error {
+					return nil
+				},
+			},
+			check: func(t *testing.T, job Job) {
+				if job.Key() != "" {
+					t.Fatal(job.Key())
+				}
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := NewJobWithNonAnonymousFunc(tt.args.spec, tt.args.run, tt.args.options...)
+			tt.check(t, got)
+		})
+	}
+}
+
+func Func(ctx context.Context) error {
+	return nil
+}
+
+type Foo struct {
+}
+
+func (Foo) Method(ctx context.Context) error {
+	return nil
+}
