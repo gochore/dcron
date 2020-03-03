@@ -14,6 +14,8 @@ import (
 type CronMeta interface {
 	Key() string
 	Hostname() string
+	Statistics() Statistics
+	Jobs() []JobMeta
 }
 
 type Cron struct {
@@ -108,4 +110,20 @@ func (c *Cron) Key() string {
 
 func (c *Cron) Hostname() string {
 	return c.hostname
+}
+
+func (c *Cron) Statistics() Statistics {
+	ret := Statistics{}
+	for _, j := range c.jobs {
+		ret.add(j.statistics)
+	}
+	return ret
+}
+
+func (c *Cron) Jobs() []JobMeta {
+	var ret []JobMeta
+	for _, j := range c.jobs {
+		ret = append(ret, j)
+	}
+	return ret
 }

@@ -145,8 +145,9 @@ func Test_innerJob_Run(t *testing.T) {
 		retryInterval RetryInterval
 	}
 	tests := []struct {
-		name   string
-		fields fields
+		name       string
+		fields     fields
+		statistics Statistics
 	}{
 		{
 			name: "regular",
@@ -167,6 +168,17 @@ func Test_innerJob_Run(t *testing.T) {
 				},
 				retryTimes: 1,
 			},
+			statistics: Statistics{
+				TotalTask:   1,
+				PassedTask:  1,
+				FailedTask:  0,
+				SkippedTask: 0,
+				MissedTask:  0,
+				TotalRun:    1,
+				PassedRun:   1,
+				FailedRun:   0,
+				RetriedRun:  0,
+			},
 		},
 		{
 			name: "skip",
@@ -186,6 +198,17 @@ func Test_innerJob_Run(t *testing.T) {
 					}
 				},
 				retryTimes: 1,
+			},
+			statistics: Statistics{
+				TotalTask:   1,
+				PassedTask:  0,
+				FailedTask:  0,
+				SkippedTask: 1,
+				MissedTask:  0,
+				TotalRun:    0,
+				PassedRun:   0,
+				FailedRun:   0,
+				RetriedRun:  0,
 			},
 		},
 		{
@@ -209,6 +232,17 @@ func Test_innerJob_Run(t *testing.T) {
 					}
 				},
 				retryTimes: 10,
+			},
+			statistics: Statistics{
+				TotalTask:   1,
+				PassedTask:  0,
+				FailedTask:  1,
+				SkippedTask: 0,
+				MissedTask:  0,
+				TotalRun:    10,
+				PassedRun:   0,
+				FailedRun:   10,
+				RetriedRun:  9,
 			},
 		},
 		{
@@ -236,6 +270,17 @@ func Test_innerJob_Run(t *testing.T) {
 					return time.Duration(triedTimes) * time.Second
 				},
 			},
+			statistics: Statistics{
+				TotalTask:   1,
+				PassedTask:  0,
+				FailedTask:  1,
+				SkippedTask: 0,
+				MissedTask:  0,
+				TotalRun:    3,
+				PassedRun:   0,
+				FailedRun:   3,
+				RetriedRun:  2,
+			},
 		},
 		{
 			name: "take too long",
@@ -261,6 +306,17 @@ func Test_innerJob_Run(t *testing.T) {
 				retryTimes:    5,
 				retryInterval: nil,
 			},
+			statistics: Statistics{
+				TotalTask:   1,
+				PassedTask:  0,
+				FailedTask:  1,
+				SkippedTask: 0,
+				MissedTask:  0,
+				TotalRun:    1,
+				PassedRun:   0,
+				FailedRun:   1,
+				RetriedRun:  0,
+			},
 		},
 		{
 			name: "miss",
@@ -281,6 +337,17 @@ func Test_innerJob_Run(t *testing.T) {
 				},
 				retryTimes: 1,
 			},
+			statistics: Statistics{
+				TotalTask:   1,
+				PassedTask:  0,
+				FailedTask:  0,
+				SkippedTask: 0,
+				MissedTask:  1,
+				TotalRun:    0,
+				PassedRun:   0,
+				FailedRun:   0,
+				RetriedRun:  0,
+			},
 		},
 		{
 			name: "panic by calling",
@@ -297,6 +364,17 @@ func Test_innerJob_Run(t *testing.T) {
 					}
 				},
 				retryTimes: 1,
+			},
+			statistics: Statistics{
+				TotalTask:   1,
+				PassedTask:  0,
+				FailedTask:  1,
+				SkippedTask: 0,
+				MissedTask:  0,
+				TotalRun:    1,
+				PassedRun:   0,
+				FailedRun:   1,
+				RetriedRun:  0,
 			},
 		},
 		{
@@ -317,6 +395,17 @@ func Test_innerJob_Run(t *testing.T) {
 				},
 				retryTimes: 1,
 			},
+			statistics: Statistics{
+				TotalTask:   1,
+				PassedTask:  0,
+				FailedTask:  1,
+				SkippedTask: 0,
+				MissedTask:  0,
+				TotalRun:    1,
+				PassedRun:   0,
+				FailedRun:   1,
+				RetriedRun:  0,
+			},
 		},
 	}
 	for _, tt := range tests {
@@ -334,6 +423,9 @@ func Test_innerJob_Run(t *testing.T) {
 				retryInterval: tt.fields.retryInterval,
 			}
 			j.Run()
+			if got := j.Statistics(); got != tt.statistics {
+				t.Errorf("Statistics() = %v, want %v", got, tt.statistics)
+			}
 		})
 	}
 }

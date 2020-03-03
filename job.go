@@ -8,13 +8,9 @@ import (
 	"strings"
 )
 
-type JobMeta interface {
+type Job interface {
 	Key() string
 	Spec() string
-}
-
-type Job interface {
-	JobMeta
 	Run(ctx context.Context) error
 	Options() []JobOption
 }
