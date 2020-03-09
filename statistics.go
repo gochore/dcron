@@ -14,7 +14,8 @@ type Statistics struct {
 	RetriedRun int64
 }
 
-func (s *Statistics) add(delta Statistics) {
+// Add return a new Statistics with two added.
+func (s Statistics) Add(delta Statistics) Statistics {
 	s.TotalTask += delta.TotalTask
 	s.PassedTask += delta.PassedTask
 	s.FailedTask += delta.FailedTask
@@ -24,4 +25,5 @@ func (s *Statistics) add(delta Statistics) {
 	s.PassedRun += delta.PassedRun
 	s.FailedRun += delta.FailedRun
 	s.RetriedRun += delta.RetriedRun
+	return s
 }

@@ -130,7 +130,7 @@ func (c *Cron) Hostname() string {
 func (c *Cron) Statistics() Statistics {
 	ret := Statistics{}
 	for _, j := range c.jobs {
-		ret.add(j.statistics)
+		ret = ret.Add(j.statistics)
 	}
 	return ret
 }
