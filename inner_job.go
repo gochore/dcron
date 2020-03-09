@@ -125,10 +125,6 @@ func (j *innerJob) Run() {
 	}
 }
 
-func (j *innerJob) Cron() *Cron {
-	return j.cron
-}
-
 func safeRun(ctx context.Context, run RunFunc) (err error) {
 	defer func() {
 		if r := recover(); r != nil {
