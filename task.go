@@ -9,6 +9,7 @@ const (
 	keyContextTask = "dcron/task"
 )
 
+// Task is a execute of a job.
 type Task struct {
 	Key        string
 	Cron       CronMeta
@@ -22,6 +23,8 @@ type Task struct {
 	TriedTimes int
 }
 
+// TaskFromContext extracts a Task from a context,
+// it is useful inner the Run function.
 func TaskFromContext(ctx context.Context) (Task, bool) {
 	if ctx == nil {
 		return Task{}, false

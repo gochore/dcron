@@ -1,5 +1,6 @@
 package dcron
 
+// Statistics records statistics info for a cron or a job.
 type Statistics struct {
 	TotalTask   int64
 	PassedTask  int64
