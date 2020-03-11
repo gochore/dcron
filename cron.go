@@ -11,13 +11,19 @@ import (
 	"github.com/robfig/cron/v3"
 )
 
+// CronMeta is a read only wrapper for Cron.
 type CronMeta interface {
+	// Key returns the unique key of the cron.
 	Key() string
+	// Hostname returns current hostname.
 	Hostname() string
+	// Statistics returns statistics info of the cron's all jobs.
 	Statistics() Statistics
+	// Jobs returns the cron's all jobs as JobMeta.
 	Jobs() []JobMeta
 }
 
+// Cron keeps track of any number of jobs, invoking the associated func as specified.
 type Cron struct {
 	key      string
 	hostname string
@@ -27,6 +33,7 @@ type Cron struct {
 	location *time.Location
 }
 
+// NewCron returns a cron with specified options.
 func NewCron(options ...CronOption) *Cron {
 	ret := &Cron{
 		location: time.Local,
@@ -44,6 +51,7 @@ func NewCron(options ...CronOption) *Cron {
 	return ret
 }
 
+// AddJobs helps adding multiple jobs.
 func (c *Cron) AddJobs(jobs ...Job) error {
 	var errs []string
 	for _, job := range jobs {
@@ -92,34 +100,42 @@ func (c *Cron) addJob(job Job) error {
 	return nil
 }
 
+// Start the cron scheduler in its own goroutine, or no-op if already started.
 func (c *Cron) Start() {
 	c.cron.Start()
 }
 
+// Stop stops the cron scheduler if it is running; otherwise it does nothing.
+// A context is returned so the caller can wait for running jobs to complete.
 func (c *Cron) Stop() context.Context {
 	return c.cron.Stop()
 }
 
+// Run the cron scheduler, or no-op if already running.
 func (c *Cron) Run() {
 	c.cron.Run()
 }
 
+// Key implements CronMeta.Key
 func (c *Cron) Key() string {
 	return c.key
 }
 
+// Hostname implements CronMeta.Hostname
 func (c *Cron) Hostname() string {
 	return c.hostname
 }
 
+// Statistics implements CronMeta.Statistics
 func (c *Cron) Statistics() Statistics {
 	ret := Statistics{}
 	for _, j := range c.jobs {
-		ret.add(j.statistics)
+		ret = ret.Add(j.statistics)
 	}
 	return ret
 }
 
+// Jobs implements CronMeta.Jobs
 func (c *Cron) Jobs() []JobMeta {
 	var ret []JobMeta
 	for _, j := range c.jobs {

@@ -3,7 +3,6 @@ package dcron
 import (
 	"context"
 	"errors"
-	"reflect"
 	"strings"
 	"testing"
 	"time"
@@ -13,53 +12,6 @@ import (
 
 	"github.com/robfig/cron/v3"
 )
-
-func Test_innerJob_Cron(t *testing.T) {
-	c := NewCron()
-
-	type fields struct {
-		cron          *Cron
-		entryID       cron.EntryID
-		key           string
-		spec          string
-		before        BeforeFunc
-		run           RunFunc
-		after         AfterFunc
-		retryTimes    int
-		retryInterval RetryInterval
-	}
-	tests := []struct {
-		name   string
-		fields fields
-		want   *Cron
-	}{
-		{
-			name: "regular",
-			fields: fields{
-				cron: c,
-			},
-			want: c,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			j := &innerJob{
-				cron:          tt.fields.cron,
-				entryID:       tt.fields.entryID,
-				key:           tt.fields.key,
-				spec:          tt.fields.spec,
-				before:        tt.fields.before,
-				run:           tt.fields.run,
-				after:         tt.fields.after,
-				retryTimes:    tt.fields.retryTimes,
-				retryInterval: tt.fields.retryInterval,
-			}
-			if got := j.Cron(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Cron() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
 
 func Test_innerJob_Key(t *testing.T) {
 	type fields struct {

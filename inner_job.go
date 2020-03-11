@@ -10,9 +10,13 @@ import (
 	"github.com/robfig/cron/v3"
 )
 
+// CronMeta is a read only wrapper for innerJob.
 type JobMeta interface {
+	// Key returns the unique key of the job.
 	Key() string
+	// Key returns the spec of the job.
 	Spec() string
+	// Statistics returns statistics info of the job.
 	Statistics() Statistics
 }
 
@@ -31,14 +35,17 @@ type innerJob struct {
 	statistics    Statistics
 }
 
+// Key implements JobMeta.Key.
 func (j *innerJob) Key() string {
 	return j.key
 }
 
+// Spec implements JobMeta.Spec.
 func (j *innerJob) Spec() string {
 	return j.spec
 }
 
+// Statistics implements JobMeta.Statistics.
 func (j *innerJob) Statistics() Statistics {
 	return j.statistics
 }
@@ -116,10 +123,6 @@ func (j *innerJob) Run() {
 			atomic.AddInt64(&j.statistics.FailedTask, 1)
 		}
 	}
-}
-
-func (j *innerJob) Cron() *Cron {
-	return j.cron
 }
 
 func safeRun(ctx context.Context, run RunFunc) (err error) {
