@@ -309,7 +309,7 @@ func Test_JobWithGroup(t *testing.T) {
 			time.Sleep(time.Duration(rand.Int63n(int64(time.Millisecond))))
 			return true
 		}).
-		Times(20)
+		Times(80)
 
 	fn := func(ctx context.Context) error {
 		task, _ := TaskFromContext(ctx)
@@ -327,7 +327,7 @@ func Test_JobWithGroup(t *testing.T) {
 		t.Fatal(err)
 	}
 	c.Start()
-	time.Sleep(10 * time.Second)
+	time.Sleep(40 * time.Second)
 	<-c.Stop().Done()
 
 	t.Logf("cron statistics: %+v", c.Statistics())
