@@ -2,12 +2,14 @@ package dcron
 
 import (
 	"context"
+	"math/rand"
 	"testing"
 	"time"
 
-	"github.com/gochore/dcron/mock_dcron"
 	"github.com/golang/mock/gomock"
 	"github.com/robfig/cron/v3"
+
+	"github.com/gochore/dcron/mock_dcron"
 )
 
 func Test_Cron(t *testing.T) {
@@ -291,5 +293,45 @@ func TestNewCron(t *testing.T) {
 			got := NewCron(tt.args.options...)
 			tt.check(t, got)
 		})
+	}
+}
+
+func Test_JobWithGroup(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	atomic := mock_dcron.NewMockAtomic(ctrl)
+
+	c := NewCron(WithKey("test_cron"), WithAtomic(atomic))
+
+	atomic.EXPECT().
+		SetIfNotExists(gomock.Any(), c.Hostname()).
+		DoAndReturn(func(key, value interface{}) bool {
+			time.Sleep(time.Duration(rand.Int63n(int64(time.Millisecond))))
+			return true
+		}).
+		Times(20)
+
+	fn := func(ctx context.Context) error {
+		task, _ := TaskFromContext(ctx)
+		t.Logf("run: %v %v", task.Job.Key(), task.PlanAt.Format(time.RFC3339))
+		return nil
+	}
+
+	g := NewGroup(2)
+	if err := c.AddJobs(
+		NewJob("test1", "* * * * * *", fn, WithGroup(g)),
+		NewJob("test2", "* * * * * *", fn, WithGroup(g)),
+		NewJob("test3", "* * * * * *", fn, WithGroup(g)),
+		NewJob("test4", "* * * * * *", fn, WithGroup(g)),
+	); err != nil {
+		t.Fatal(err)
+	}
+	c.Start()
+	time.Sleep(10 * time.Second)
+	<-c.Stop().Done()
+
+	t.Logf("cron statistics: %+v", c.Statistics())
+	for _, j := range c.Jobs() {
+		t.Logf("job %v statistics: %+v", j.Key(), j.Statistics())
 	}
 }

@@ -35,7 +35,7 @@ func (g *innerGroup) inc(platAt time.Time, fn func() bool) bool {
 	defer g.tidy()
 
 	var gc *groupCount
-	for i := len(g.counts) - 1; i > 0; i-- {
+	for i := len(g.counts) - 1; i >= 0; i-- {
 		v := g.counts[i]
 		if v.platAt.Equal(platAt) {
 			gc = v
