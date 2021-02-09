@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"runtime/debug"
+	"strings"
 	"sync/atomic"
 	"time"
 
@@ -55,7 +56,7 @@ func (j *innerJob) Run() {
 	entry := j.entryGetter.Entry(j.entryID)
 	planAt := entry.Prev
 	nextAt := entry.Next
-	key := fmt.Sprintf("dcron:%s.%s@%d", c.key, j.key, planAt.Unix())
+	key := genKey(planAt, c.key, j.key)
 
 	task := Task{
 		Key:        key,
@@ -75,7 +76,7 @@ func (j *innerJob) Run() {
 	}
 
 	if !task.Skipped {
-		if j.noMutex || j.cron.atomic == nil || j.cron.atomic.SetIfNotExists(task.Key, c.hostname) {
+		if j.noMutex ||  j.cron.setIfNotExists(task.Key) {
 			beginAt := time.Now()
 			task.BeginAt = &beginAt
 
@@ -132,4 +133,8 @@ func safeRun(ctx context.Context, run RunFunc) (err error) {
 		}
 	}()
 	return run(ctx)
+}
+
+func genKey(t time.Time, keys ...string) string {
+	return fmt.Sprintf("dcron:%s@%d", strings.Join(keys, "."), t.Unix())
 }
