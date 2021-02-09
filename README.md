@@ -1,5 +1,6 @@
 # dcron
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/gochore/dcron.svg)](https://pkg.go.dev/github.com/gochore/dcron)
 [![Build Status](https://travis-ci.com/gochore/dcron.svg?branch=master)](https://travis-ci.com/gochore/dcron)
 [![codecov](https://codecov.io/gh/gochore/dcron/branch/master/graph/badge.svg)](https://codecov.io/gh/gochore/dcron)
 [![Go Report Card](https://goreportcard.com/badge/github.com/gochore/dcron)](https://goreportcard.com/report/github.com/gochore/dcron)
