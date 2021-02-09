@@ -143,10 +143,3 @@ func (c *Cron) Jobs() []JobMeta {
 	}
 	return ret
 }
-
-func (c *Cron) setIfNotExists(key string) bool {
-	if c.atomic == nil {
-		return true
-	}
-	return c.atomic.SetIfNotExists(key, c.hostname)
-}
