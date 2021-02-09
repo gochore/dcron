@@ -5,8 +5,10 @@ import (
 	"time"
 )
 
+type ctxKey string
+
 const (
-	keyContextTask = "dcron/task"
+	keyContextTask ctxKey = "dcron/task"
 )
 
 // Task is a execute of a job.
