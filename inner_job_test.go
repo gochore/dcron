@@ -7,10 +7,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/gochore/dcron/mock_dcron"
+
 	"github.com/golang/mock/gomock"
 	"github.com/robfig/cron/v3"
-
-	"github.com/gochore/dcron/mock_dcron"
 )
 
 func Test_innerJob_Key(t *testing.T) {
@@ -335,8 +335,10 @@ func Test_innerJob_Run(t *testing.T) {
 				cron:        NewCron(WithAtomic(atomic)),
 				entryID:     1,
 				entryGetter: mockEntryGetter,
-				run: func(ctx context.Context) error { //nolint
-					ctx = nil
+				run: func(ctx context.Context) error {
+					if time.Now().Year() > 0 {
+						ctx = nil
+					}
 					ctx.Value("test")
 					return nil
 				},
