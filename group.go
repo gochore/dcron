@@ -14,9 +14,6 @@ type Group interface {
 }
 
 func NewGroup(limit int) Group {
-	if limit <= 0 {
-		return nil
-	}
 	return &innerGroup{
 		limit: limit,
 	}
@@ -49,7 +46,7 @@ func (g *innerGroup) inc(platAt time.Time, fn func() bool) bool {
 		g.counts = append(g.counts, gc)
 	}
 
-	if gc.count < g.limit && fn() {
+	if (gc.count < g.limit || g.limit <= 0) && fn() {
 		gc.count++
 		return true
 	}
