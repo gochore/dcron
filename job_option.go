@@ -17,7 +17,7 @@ type RunFunc func(ctx context.Context) error
 // AfterFunc represents the function could be called after Run.
 type AfterFunc func(task Task)
 
-// AfterFunc indicates how long should delay before retrying when run failed `triedTimes` times.
+// RetryInterval indicates how long should delay before retrying when run failed `triedTimes` times.
 type RetryInterval func(triedTimes int) time.Duration
 
 // WithBeforeFunc specifies what to do before Run.
@@ -42,7 +42,7 @@ func WithRetryTimes(retryTimes int) JobOption {
 	}
 }
 
-// WithRetryTimes indicates how long should delay before retrying when run failed `triedTimes` times.
+// WithRetryInterval indicates how long should delay before retrying when run failed `triedTimes` times.
 func WithRetryInterval(retryInterval RetryInterval) JobOption {
 	return func(job *innerJob) {
 		job.retryInterval = retryInterval

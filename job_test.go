@@ -270,13 +270,13 @@ func TestNewJobWithAutoKey(t *testing.T) {
 	}
 }
 
-func Func(ctx context.Context) error {
+func Func(_ context.Context) error {
 	return nil
 }
 
 type Foo struct {
 }
 
-func (Foo) Method(ctx context.Context) error {
+func (Foo) Method(_ context.Context) error {
 	return nil
 }

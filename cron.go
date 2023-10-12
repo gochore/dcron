@@ -51,7 +51,7 @@ func NewCron(options ...CronOption) *Cron {
 	return ret
 }
 
-// AddJobs helps adding multiple jobs.
+// AddJobs helps to add multiple jobs.
 func (c *Cron) AddJobs(jobs ...Job) error {
 	var errs []string
 	for _, job := range jobs {

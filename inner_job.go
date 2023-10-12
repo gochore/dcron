@@ -10,11 +10,11 @@ import (
 	"github.com/robfig/cron/v3"
 )
 
-// CronMeta is a read only wrapper for innerJob.
+// JobMeta is a read only wrapper for innerJob.
 type JobMeta interface {
 	// Key returns the unique key of the job.
 	Key() string
-	// Key returns the spec of the job.
+	// Spec returns the spec of the job.
 	Spec() string
 	// Statistics returns statistics info of the job.
 	Statistics() Statistics
