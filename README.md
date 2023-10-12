@@ -9,6 +9,12 @@
 
 A distributed cron framework.
 
+## Install
+
+```shell
+go get github.com/gochore/dcron
+```
+
 ## Example
 
 First of all, you should implement a distributed atomic operation:

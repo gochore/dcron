@@ -39,7 +39,7 @@ func NewJob(key, spec string, run RunFunc, options ...JobOption) Job {
 
 // NewJobWithAutoKey returns a new Job with the "run" function's name as key.
 // Be careful, the "run" should be a non-anonymous function,
-// or returned Job will has a emtpy key, and can not be added to a Cron.
+// or returned Job will have an emtpy key, and can not be added to a Cron.
 func NewJobWithAutoKey(spec string, run RunFunc, options ...JobOption) Job {
 	return NewJob(funcName(run), spec, run, options...)
 }

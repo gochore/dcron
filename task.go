@@ -11,7 +11,7 @@ const (
 	keyContextTask ctxKey = "dcron/task"
 )
 
-// Task is a execute of a job.
+// Task is an execute of a job.
 type Task struct {
 	Key        string
 	Cron       CronMeta
