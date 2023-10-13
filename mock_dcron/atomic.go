@@ -9,6 +9,7 @@
 package mock_dcron
 
 import (
+	context "context"
 	reflect "reflect"
 
 	gomock "go.uber.org/mock/gomock"
@@ -38,15 +39,15 @@ func (m *MockAtomic) EXPECT() *MockAtomicMockRecorder {
 }
 
 // SetIfNotExists mocks base method.
-func (m *MockAtomic) SetIfNotExists(key, value string) bool {
+func (m *MockAtomic) SetIfNotExists(ctx context.Context, key, value string) bool {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SetIfNotExists", key, value)
+	ret := m.ctrl.Call(m, "SetIfNotExists", ctx, key, value)
 	ret0, _ := ret[0].(bool)
 	return ret0
 }
 
 // SetIfNotExists indicates an expected call of SetIfNotExists.
-func (mr *MockAtomicMockRecorder) SetIfNotExists(key, value any) *gomock.Call {
+func (mr *MockAtomicMockRecorder) SetIfNotExists(ctx, key, value any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetIfNotExists", reflect.TypeOf((*MockAtomic)(nil).SetIfNotExists), key, value)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetIfNotExists", reflect.TypeOf((*MockAtomic)(nil).SetIfNotExists), ctx, key, value)
 }

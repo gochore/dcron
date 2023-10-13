@@ -20,7 +20,7 @@ func Test_Cron(t *testing.T) {
 	c := NewCron(WithKey("test_cron"), WithAtomic(atomic))
 
 	atomic.EXPECT().
-		SetIfNotExists(gomock.Any(), c.Hostname()).
+		SetIfNotExists(gomock.Any(), gomock.Any(), c.Hostname()).
 		Return(true).
 		Times(2)
 
@@ -304,7 +304,7 @@ func Test_JobWithGroup(t *testing.T) {
 	c := NewCron(WithKey("test_cron"), WithAtomic(atomic))
 
 	atomic.EXPECT().
-		SetIfNotExists(gomock.Any(), c.Hostname()).
+		SetIfNotExists(gomock.Any(), gomock.Any(), c.Hostname()).
 		DoAndReturn(func(key, value interface{}) bool {
 			time.Sleep(time.Duration(rand.Int63n(int64(time.Millisecond))))
 			return true
