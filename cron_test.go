@@ -6,10 +6,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/golang/mock/gomock"
-	"github.com/robfig/cron/v3"
-
 	"github.com/gochore/dcron/mock_dcron"
+
+	"github.com/robfig/cron/v3"
+	"go.uber.org/mock/gomock"
 )
 
 func Test_Cron(t *testing.T) {
@@ -20,7 +20,7 @@ func Test_Cron(t *testing.T) {
 	c := NewCron(WithKey("test_cron"), WithAtomic(atomic))
 
 	atomic.EXPECT().
-		SetIfNotExists(gomock.Any(), c.Hostname()).
+		SetIfNotExists(gomock.Any(), gomock.Any(), c.Hostname()).
 		Return(true).
 		Times(2)
 
@@ -304,8 +304,8 @@ func Test_JobWithGroup(t *testing.T) {
 	c := NewCron(WithKey("test_cron"), WithAtomic(atomic))
 
 	atomic.EXPECT().
-		SetIfNotExists(gomock.Any(), c.Hostname()).
-		DoAndReturn(func(key, value interface{}) bool {
+		SetIfNotExists(gomock.Any(), gomock.Any(), c.Hostname()).
+		DoAndReturn(func(ctx context.Context, key, value string) bool {
 			time.Sleep(time.Duration(rand.Int63n(int64(time.Millisecond))))
 			return true
 		}).

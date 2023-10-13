@@ -77,7 +77,7 @@ func (j *innerJob) Run() {
 
 	if !task.Skipped {
 		checkAtomic := func() bool {
-			return j.noMutex || j.cron.atomic == nil || j.cron.atomic.SetIfNotExists(task.Key, c.hostname)
+			return j.noMutex || j.cron.atomic == nil || j.cron.atomic.SetIfNotExists(ctx, task.Key, c.hostname)
 		}
 		needExec := false
 		if j.group != nil {

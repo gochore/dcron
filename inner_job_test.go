@@ -9,8 +9,8 @@ import (
 
 	"github.com/gochore/dcron/mock_dcron"
 
-	"github.com/golang/mock/gomock"
 	"github.com/robfig/cron/v3"
+	"go.uber.org/mock/gomock"
 )
 
 func Test_innerJob_Key(t *testing.T) {
@@ -78,8 +78,8 @@ func Test_innerJob_Run(t *testing.T) {
 		MinTimes(1)
 
 	atomic.EXPECT().
-		SetIfNotExists(gomock.Any(), gomock.Any()).
-		DoAndReturn(func(key, value string) bool {
+		SetIfNotExists(gomock.Any(), gomock.Any(), gomock.Any()).
+		DoAndReturn(func(ctx context.Context, key, value string) bool {
 			return value != "always_miss"
 		}).
 		MinTimes(1)
