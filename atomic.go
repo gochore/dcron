@@ -1,6 +1,8 @@
 package dcron
 
-//go:generate mockgen -source=atomic.go -destination mock_dcron/atomic.go
+//go:generate go get go.uber.org/mock/mockgen
+//go:generate go run go.uber.org/mock/mockgen -source=atomic.go -destination mock_dcron/atomic.go
+//go:generate go mod tidy
 
 // Atomic provides distributed atomic operation for dcron,
 // it can be implemented easily via Redis/SQL and so on.

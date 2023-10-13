@@ -9,8 +9,8 @@ import (
 
 	"github.com/gochore/dcron/mock_dcron"
 
-	"github.com/golang/mock/gomock"
 	"github.com/robfig/cron/v3"
+	"go.uber.org/mock/gomock"
 )
 
 func Test_innerJob_Key(t *testing.T) {
