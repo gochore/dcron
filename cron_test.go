@@ -305,7 +305,7 @@ func Test_JobWithGroup(t *testing.T) {
 
 	atomic.EXPECT().
 		SetIfNotExists(gomock.Any(), gomock.Any(), c.Hostname()).
-		DoAndReturn(func(key, value interface{}) bool {
+		DoAndReturn(func(ctx context.Context, key, value string) bool {
 			time.Sleep(time.Duration(rand.Int63n(int64(time.Millisecond))))
 			return true
 		}).

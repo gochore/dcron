@@ -79,7 +79,7 @@ func Test_innerJob_Run(t *testing.T) {
 
 	atomic.EXPECT().
 		SetIfNotExists(gomock.Any(), gomock.Any(), gomock.Any()).
-		DoAndReturn(func(key, value string) bool {
+		DoAndReturn(func(ctx context.Context, key, value string) bool {
 			return value != "always_miss"
 		}).
 		MinTimes(1)
