@@ -79,3 +79,16 @@ If you start the program multiple times, you will notice that the cron will run 
 |                                                                        | 2023/10/13 11:40:15 run: */15 * * * * * dcron:TestCron.Job1@1697168415 |                                                                        |
 |                                                                        |                                                                        | 2023/10/13 11:40:30 run: */15 * * * * * dcron:TestCron.Job1@1697168430 |
 | 2023/10/13 11:40:45 run: */15 * * * * * dcron:TestCron.Job1@1697168445 |                                                                        |                                                                        |
+
+One more thing, since `dcron.WithAtomic(atomic)` is optional, it's also a good idea to use it as a local cron.
+
+```go
+	cron := dcron.NewCron()
+	job2 := dcron.NewJob("A local job", "*/15 * * * * *", func(ctx context.Context) error {
+		// do something
+		return nil
+	})
+	if err := cron.AddJobs(job2); err != nil {
+		log.Fatal(err)
+	}
+```
