@@ -134,10 +134,11 @@ func TestWithLocation(t *testing.T) {
 }
 
 func TestWithContext(t *testing.T) {
+	type ctxKey struct{}
 	job := NewJob("test", "*/2 * * * * *", func(ctx context.Context) error {
 		task, _ := TaskFromContext(ctx)
 		t.Logf("run: %v %v", task.Job.Key(), task.PlanAt.Format(time.RFC3339))
-		if ctx.Value("test").(string) != "test" {
+		if ctx.Value(ctxKey{}).(string) != "test" {
 			t.Fatal("wrong context")
 		}
 		return nil
@@ -146,7 +147,7 @@ func TestWithContext(t *testing.T) {
 	t.Run("start with context", func(t *testing.T) {
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
-		ctx = context.WithValue(ctx, "test", "test")
+		ctx = context.WithValue(ctx, ctxKey{}, "test")
 
 		c := NewCron(WithContext(ctx))
 		if err := c.AddJobs(job); err != nil {
@@ -160,7 +161,7 @@ func TestWithContext(t *testing.T) {
 	t.Run("run with context", func(t *testing.T) {
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
-		ctx = context.WithValue(ctx, "test", "test")
+		ctx = context.WithValue(ctx, ctxKey{}, "test")
 
 		c := NewCron(WithContext(ctx))
 		if err := c.AddJobs(job); err != nil {
