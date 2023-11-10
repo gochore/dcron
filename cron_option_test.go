@@ -1,6 +1,7 @@
 package dcron
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -130,4 +131,46 @@ func TestWithLocation(t *testing.T) {
 			tt.check(t, got)
 		})
 	}
+}
+
+func TestWithContext(t *testing.T) {
+	type ctxKey struct{}
+	job := NewJob("test", "*/2 * * * * *", func(ctx context.Context) error {
+		task, _ := TaskFromContext(ctx)
+		t.Logf("run: %v %v", task.Job.Key(), task.PlanAt.Format(time.RFC3339))
+		if ctx.Value(ctxKey{}).(string) != "test" {
+			t.Fatal("wrong context")
+		}
+		return nil
+	})
+
+	t.Run("start with context", func(t *testing.T) {
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+		ctx = context.WithValue(ctx, ctxKey{}, "test")
+
+		c := NewCron(WithContext(ctx))
+		if err := c.AddJobs(job); err != nil {
+			t.Fatal(err)
+		}
+		c.Start()
+		time.Sleep(5 * time.Second)
+		<-c.Stop().Done()
+	})
+
+	t.Run("run with context", func(t *testing.T) {
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+		ctx = context.WithValue(ctx, ctxKey{}, "test")
+
+		c := NewCron(WithContext(ctx))
+		if err := c.AddJobs(job); err != nil {
+			t.Fatal(err)
+		}
+		go func() {
+			time.Sleep(5 * time.Second)
+			cancel()
+		}()
+		c.Run()
+	})
 }

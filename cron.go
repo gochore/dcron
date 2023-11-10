@@ -25,12 +25,14 @@ type CronMeta interface {
 
 // Cron keeps track of any number of jobs, invoking the associated func as specified.
 type Cron struct {
-	key      string
-	hostname string
-	cron     *cron.Cron
-	atomic   Atomic
-	jobs     []*innerJob
-	location *time.Location
+	key           string
+	hostname      string
+	cron          *cron.Cron
+	atomic        Atomic
+	jobs          []*innerJob
+	location      *time.Location
+	context       context.Context
+	contextCancel context.CancelFunc
 }
 
 // NewCron returns a cron with specified options.
@@ -102,17 +104,32 @@ func (c *Cron) addJob(job Job) error {
 
 // Start the cron scheduler in its own goroutine, or no-op if already started.
 func (c *Cron) Start() {
+	if c.context != nil {
+		go func() {
+			<-c.context.Done()
+			c.Stop()
+		}()
+	}
 	c.cron.Start()
 }
 
 // Stop stops the cron scheduler if it is running; otherwise it does nothing.
 // A context is returned so the caller can wait for running jobs to complete.
 func (c *Cron) Stop() context.Context {
+	if c.contextCancel != nil {
+		c.contextCancel()
+	}
 	return c.cron.Stop()
 }
 
 // Run the cron scheduler, or no-op if already running.
 func (c *Cron) Run() {
+	if c.context != nil {
+		go func() {
+			<-c.context.Done()
+			c.Stop()
+		}()
+	}
 	c.cron.Run()
 }
 

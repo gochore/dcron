@@ -67,7 +67,12 @@ func (j *innerJob) Run() {
 	}
 	atomic.AddInt64(&j.statistics.TotalTask, 1)
 
-	ctx, cancel := context.WithDeadline(context.WithValue(context.Background(), keyContextTask, task), nextAt)
+	parentCtx := c.context
+	if parentCtx == nil {
+		parentCtx = context.Background()
+	}
+
+	ctx, cancel := context.WithDeadline(context.WithValue(parentCtx, keyContextTask, task), nextAt)
 	defer cancel()
 
 	if j.before != nil && j.before(task) {

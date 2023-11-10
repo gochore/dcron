@@ -1,6 +1,9 @@
 package dcron
 
-import "time"
+import (
+	"context"
+	"time"
+)
 
 // CronOption represents a modification to the default behavior of a Cron.
 type CronOption func(c *Cron)
@@ -30,5 +33,14 @@ func WithAtomic(atomic Atomic) CronOption {
 func WithLocation(loc *time.Location) CronOption {
 	return func(c *Cron) {
 		c.location = loc
+	}
+}
+
+// WithContext sets the root context of the cron instance.
+// It will be used as the parent context of all tasks,
+// and when the context is done, the cron will be stopped.
+func WithContext(ctx context.Context) CronOption {
+	return func(c *Cron) {
+		c.context, c.contextCancel = context.WithCancel(ctx)
 	}
 }
