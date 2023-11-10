@@ -2,16 +2,16 @@ package dcron
 
 // Statistics records statistics info for a cron or a job.
 type Statistics struct {
-	TotalTask   int64
-	PassedTask  int64
-	FailedTask  int64
-	SkippedTask int64
-	MissedTask  int64
+	TotalTask   int64 // Total count of tasks processed
+	PassedTask  int64 // Number of tasks successfully executed
+	FailedTask  int64 // Number of tasks that failed during execution due to errors
+	SkippedTask int64 // Number of tasks skipped due to BeforeFunc returning true
+	MissedTask  int64 // Number of tasks executed by other instances
 
-	TotalRun   int64
-	PassedRun  int64
-	FailedRun  int64
-	RetriedRun int64
+	TotalRun   int64 // Total count of execution runs
+	PassedRun  int64 // Number of successfully executed runs
+	FailedRun  int64 // Number of runs that have failed due to errors
+	RetriedRun int64 // Number of runs that encountered errors and were subsequently retried
 }
 
 // Add return a new Statistics with two added.
