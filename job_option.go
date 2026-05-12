@@ -20,6 +20,9 @@ type AfterFunc func(task Task)
 // RetryInterval indicates how long should delay before retrying when run failed `triedTimes` times.
 type RetryInterval func(triedTimes int) time.Duration
 
+// DeriveContext indicates how to derive a new context for Run with the given Task,
+type DeriveContext func(ctx context.Context, task Task) (context.Context, context.CancelFunc)
+
 // WithBeforeFunc specifies what to do before Run.
 func WithBeforeFunc(before BeforeFunc) JobOption {
 	return func(job *innerJob) {
@@ -61,5 +64,12 @@ func WithNoMutex() JobOption {
 func WithGroup(group Group) JobOption {
 	return func(job *innerJob) {
 		job.group = group
+	}
+}
+
+// WithDeriveContext indicates how to derive a new context for Run with the given Task.
+func WithDeriveContext(deriveContext DeriveContext) JobOption {
+	return func(job *innerJob) {
+		job.deriveContext = deriveContext
 	}
 }

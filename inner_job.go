@@ -27,6 +27,7 @@ type innerJob struct {
 	key           string
 	spec          string
 	before        BeforeFunc
+	deriveContext DeriveContext
 	run           RunFunc
 	after         AfterFunc
 	retryTimes    int
@@ -96,7 +97,13 @@ func (j *innerJob) Run() {
 			task.BeginAt = &beginAt
 
 			for i := 0; i < j.retryTimes; i++ {
-				task.Return = safeRun(ctx, j.run)
+				if j.deriveContext != nil {
+					ctx, cancel := j.deriveContext(ctx, task)
+					task.Return = safeRun(ctx, j.run)
+					cancel()
+				} else {
+					task.Return = safeRun(ctx, j.run)
+				}
 				atomic.AddInt64(&j.statistics.TotalRun, 1)
 				if i > 0 {
 					atomic.AddInt64(&j.statistics.RetriedRun, 1)
