@@ -28,7 +28,7 @@ type AfterContextFunc func(ctx context.Context, task Task)
 // RetryInterval indicates how long should delay before retrying when run failed `triedTimes` times.
 type RetryInterval func(triedTimes int) time.Duration
 
-// DeriveContext indicates how to derive a new context for Run with the given Task.
+// DeriveContext indicates how to derive a new context from the job's base context and the current Task.
 type DeriveContext func(ctx context.Context, task Task) context.Context
 
 // WithBeforeFunc specifies what to do before Run.
@@ -91,7 +91,10 @@ func WithGroup(group Group) JobOption {
 	}
 }
 
-// WithDeriveContext indicates how to derive a new context for Run with the given Task.
+// WithDeriveContext specifies how to derive a new context for the entire job execution, including
+// before/after hooks, Run, and retry logic. The returned context must derive from the provided ctx
+// to preserve the deadline, cancellation signal, and the embedded Task value (accessible via TaskFromContext).
+// Returning a detached context (e.g., context.Background()) will break deadline enforcement and retry timeout logic.
 func WithDeriveContext(deriveContext DeriveContext) JobOption {
 	return func(job *innerJob) {
 		job.deriveContext = deriveContext
