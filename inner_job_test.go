@@ -389,10 +389,10 @@ func Test_innerJob_Run(t *testing.T) {
 				entryID:     1,
 				entryGetter: mockEntryGetter,
 				deriveContext: func(ctx context.Context, task Task) context.Context {
-					return context.WithValue(ctx, "test_key", "test_value")
+					return context.WithValue(ctx, ctxKey("test_key"), "test_value")
 				},
 				run: func(ctx context.Context) error {
-					if ctx.Value("test_key") != "test_value" {
+					if ctx.Value(ctxKey("test_key")) != "test_value" {
 						return errors.New("context value not found")
 					}
 					return nil
