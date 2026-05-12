@@ -28,7 +28,7 @@ type AfterContextFunc func(ctx context.Context, task Task)
 // RetryInterval indicates how long should delay before retrying when run failed `triedTimes` times.
 type RetryInterval func(triedTimes int) time.Duration
 
-// DeriveContext indicates how to derive a new context for Run with the given Task,
+// DeriveContext indicates how to derive a new context for Run with the given Task.
 type DeriveContext func(ctx context.Context, task Task) context.Context
 
 // WithBeforeFunc specifies what to do before Run.

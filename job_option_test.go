@@ -1,15 +1,14 @@
 package dcron
 
 import (
+	"context"
 	"fmt"
 	"testing"
 	"time"
 )
 
 func TestWithAfterFunc(t *testing.T) {
-	after := func(task Task) {
-
-	}
+	after := func(task Task) {}
 
 	type args struct {
 		after AfterFunc
@@ -160,6 +159,109 @@ func TestWithNoMutex(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := WithNoMutex()
+			tt.check(t, got)
+		})
+	}
+}
+
+func TestWithBeforeContextFunc(t *testing.T) {
+	before := func(ctx context.Context, task Task) (skip bool) {
+		return false
+	}
+
+	type args struct {
+		before BeforeContextFunc
+	}
+	tests := []struct {
+		name  string
+		args  args
+		check func(t *testing.T, option JobOption)
+	}{
+		{
+			name: "regular",
+			args: args{
+				before: before,
+			},
+			check: func(t *testing.T, option JobOption) {
+				j := &innerJob{}
+				option(j)
+				if fmt.Sprintf("%p", j.ctxBefore) != fmt.Sprintf("%p", before) {
+					t.Fatal()
+				}
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := WithBeforeContextFunc(tt.args.before)
+			tt.check(t, got)
+		})
+	}
+}
+
+func TestWithAfterContextFunc(t *testing.T) {
+	after := func(ctx context.Context, task Task) {}
+
+	type args struct {
+		after AfterContextFunc
+	}
+	tests := []struct {
+		name  string
+		args  args
+		check func(t *testing.T, option JobOption)
+	}{
+		{
+			name: "regular",
+			args: args{
+				after: after,
+			},
+			check: func(t *testing.T, option JobOption) {
+				j := &innerJob{}
+				option(j)
+				if fmt.Sprintf("%p", j.ctxAfter) != fmt.Sprintf("%p", after) {
+					t.Fatal()
+				}
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := WithAfterContextFunc(tt.args.after)
+			tt.check(t, got)
+		})
+	}
+}
+
+func TestWithDeriveContext(t *testing.T) {
+	deriveContext := func(ctx context.Context, task Task) context.Context {
+		return ctx
+	}
+
+	type args struct {
+		deriveContext DeriveContext
+	}
+	tests := []struct {
+		name  string
+		args  args
+		check func(t *testing.T, option JobOption)
+	}{
+		{
+			name: "regular",
+			args: args{
+				deriveContext: deriveContext,
+			},
+			check: func(t *testing.T, option JobOption) {
+				j := &innerJob{}
+				option(j)
+				if fmt.Sprintf("%p", j.deriveContext) != fmt.Sprintf("%p", deriveContext) {
+					t.Fatal()
+				}
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := WithDeriveContext(tt.args.deriveContext)
 			tt.check(t, got)
 		})
 	}
